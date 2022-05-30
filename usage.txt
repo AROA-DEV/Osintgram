@@ -1,0 +1,4 @@
+ 
+start
+
+python3 main.py (target acount name)

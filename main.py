@@ -1,32 +1,28 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
 
 from src.Osintgram import Osintgram
 import argparse
 from src import printcolors as pc
+from src import artwork
 import sys
 import signal
-import readline
 
-commands = ["quit", "exit", "list", "help", "addrs", "captions", "comments", "followers",
-            "followings", "fwersemail", "fwingsemail", "hashtags", "info", "likes",
-            "mediatype", "photodes", "photos", "propic", "stories", "tagged", "target",
-            "wcommented", "wtagged"]
+is_windows = False
+
+try:
+    import gnureadline  
+except: 
+    is_windows = True
+    import pyreadline
 
 
 def printlogo():
-    pc.printout("________         .__        __                               \n", pc.YELLOW)
-    pc.printout("\_____  \   _____|__| _____/  |_  ________________    _____  \n", pc.YELLOW)
-    pc.printout(" /   |   \ /  ___/  |/    \   __\/ ___\_  __ \__  \  /     \ \n", pc.YELLOW)
-    pc.printout("/    |    \\\___ \|  |   |  \  | / /_/  >  | \// __ \|  Y Y  \\\n", pc.YELLOW)
-    pc.printout("\_______  /____  >__|___|  /__| \___  /|__|  (____  /__|_|  /\n", pc.YELLOW)
-    pc.printout("        \/     \/        \/    /_____/            \/      \/ \n", pc.YELLOW)
-    print('\n')
-    pc.printout("Version 0.9 - Developed by Giuseppe Criscione - 2019\n\n", pc.YELLOW)
+    pc.printout(artwork.ascii_art, pc.YELLOW)
+    pc.printout("\nVersion 1.1 - Developed by Giuseppe Criscione\n\n", pc.YELLOW)
     pc.printout("Type 'list' to show all allowed commands\n")
-    pc.printout("Type 'FILE=y' to save results to files like '<target username>_<command>.txt (deafult is disabled)'\n")
+    pc.printout("Type 'FILE=y' to save results to files like '<target username>_<command>.txt (default is disabled)'\n")
     pc.printout("Type 'FILE=n' to disable saving to files'\n")
-    pc.printout("Type 'JSON=y' to export results to a JSON files like '<target username>_<command>.json (deafult is "
+    pc.printout("Type 'JSON=y' to export results to a JSON files like '<target username>_<command>.json (default is "
                 "disabled)'\n")
     pc.printout("Type 'JSON=n' to disable exporting to files'\n")
 
@@ -38,8 +34,12 @@ def cmdlist():
     print("Enable/disable export in a '<target username>_<command>.json' file'")
     pc.printout("addrs\t\t")
     print("Get all registered addressed by target photos")
+    pc.printout("cache\t\t")
+    print("Clear cache of the tool")
     pc.printout("captions\t")
     print("Get target's photos captions")
+    pc.printout("commentdata\t")
+    print("Get a list of all the comments on the target's posts")
     pc.printout("comments\t")
     print("Get total comments of target's posts")
     pc.printout("followers\t")
@@ -50,6 +50,10 @@ def cmdlist():
     print("Get email of target followers")
     pc.printout("fwingsemail\t")
     print("Get email of users followed by target")
+    pc.printout("fwersnumber\t")
+    print("Get phone number of target followers")
+    pc.printout("fwingsnumber\t")
+    print("Get phone number of users followed by target")    
     pc.printout("hashtags\t")
     print("Get hashtags used by target")
     pc.printout("info\t\t")
@@ -65,7 +69,7 @@ def cmdlist():
     pc.printout("propic\t\t")
     print("Download target's profile picture")
     pc.printout("stories\t\t")
-    print("Download target's sories")
+    print("Download target's stories")
     pc.printout("tagged\t\t")
     print("Get list of users tagged by target")
     pc.printout("target\t\t")
@@ -88,70 +92,98 @@ def completer(text, state):
     else:
         return None
 
+def _quit():
+    pc.printout("Goodbye!\n", pc.RED)
+    sys.exit(0)
+
 
 signal.signal(signal.SIGINT, signal_handler)
-readline.parse_and_bind("tab: complete")
-readline.set_completer(completer)
-
-printlogo()
+if is_windows:
+    pyreadline.Readline().parse_and_bind("tab: complete")
+    pyreadline.Readline().set_completer(completer)
+else:
+    gnureadline.parse_and_bind("tab: complete")
+    gnureadline.set_completer(completer)
 
 parser = argparse.ArgumentParser(description='Osintgram is a OSINT tool on Instagram. It offers an interactive shell '
                                              'to perform analysis on Instagram account of any users by its nickname ')
 parser.add_argument('id', type=str,  # var = id
                     help='username')
+parser.add_argument('-C','--cookies', help='clear\'s previous cookies', action="store_true")
 parser.add_argument('-j', '--json', help='save commands output as JSON file', action='store_true')
 parser.add_argument('-f', '--file', help='save output in a file', action='store_true')
+parser.add_argument('-c', '--command', help='run in single command mode & execute provided command', action='store')
+parser.add_argument('-o', '--output', help='where to store photos', action='store')
 
 args = parser.parse_args()
 
-api = Osintgram(args.id, args.file, args.json)
+
+api = Osintgram(args.id, args.file, args.json, args.command, args.output, args.cookies)
+
+
+
+commands = {
+    'list':             cmdlist,
+    'help':             cmdlist,
+    'quit':             _quit,
+    'exit':             _quit,
+    'addrs':            api.get_addrs,
+    'cache':            api.clear_cache,
+    'captions':         api.get_captions,
+    "commentdata":      api.get_comment_data,
+    'comments':         api.get_total_comments,
+    'followers':        api.get_followers,
+    'followings':       api.get_followings,
+    'fwersemail':       api.get_fwersemail,
+    'fwingsemail':      api.get_fwingsemail,
+    'fwersnumber':      api.get_fwersnumber,
+    'fwingsnumber':     api.get_fwingsnumber,
+    'hashtags':         api.get_hashtags,
+    'info':             api.get_user_info,
+    'likes':            api.get_total_likes,
+    'mediatype':        api.get_media_type,
+    'photodes':         api.get_photo_description,
+    'photos':           api.get_user_photo,
+    'propic':           api.get_user_propic,
+    'stories':          api.get_user_stories,
+    'tagged':           api.get_people_tagged_by_user,
+    'target':           api.change_target,
+    'wcommented':       api.get_people_who_commented,
+    'wtagged':          api.get_people_who_tagged
+}
+
+
+signal.signal(signal.SIGINT, signal_handler)
+if is_windows:
+    pyreadline.Readline().parse_and_bind("tab: complete")
+    pyreadline.Readline().set_completer(completer)
+else:
+    gnureadline.parse_and_bind("tab: complete")
+    gnureadline.set_completer(completer)
+
+if not args.command:
+    printlogo()
+
 
 while True:
-    pc.printout("Run a command: ", pc.YELLOW)
-    cmd = input()
-    if cmd == "quit" or cmd == "exit":
-        pc.printout("Goodbye!\n", pc.RED)
-        sys.exit(0)
-    elif cmd == "list" or cmd == "help":
-        cmdlist()
-    elif cmd == "addrs":
-        api.get_addrs()
-    elif cmd == "captions":
-        api.get_captions()
-    elif cmd == "comments":
-        api.get_total_comments()
-    elif cmd == "followers":
-        api.get_followers()
-    elif cmd == "followings":
-        api.get_followings()
-    elif cmd == 'fwersemail':
-        api.get_fwersemail()
-    elif cmd == 'fwingsemail':
-        api.get_fwingsemail()
-    elif cmd == "hashtags":
-        api.get_hashtags()
-    elif cmd == "info":
-        api.get_user_info()
-    elif cmd == "likes":
-        api.get_total_likes()
-    elif cmd == "mediatype":
-        api.get_media_type()
-    elif cmd == "photodes":
-        api.get_photo_description()
-    elif cmd == "photos":
-        api.get_user_photo()
-    elif cmd == "propic":
-        api.get_user_propic()
-    elif cmd == "stories":
-        api.get_user_stories()
-    elif cmd == "tagged":
-        api.get_people_tagged_by_user()
-    elif cmd == "target":
-        api.change_target()
-    elif cmd == "wcommented":
-        api.get_people_who_commented()
-    elif cmd == "wtagged":
-        api.get_people_who_tagged()
+    if args.command:
+        cmd = args.command
+        _cmd = commands.get(args.command)
+    else:
+        signal.signal(signal.SIGINT, signal_handler)
+        if is_windows:
+            pyreadline.Readline().parse_and_bind("tab: complete")
+            pyreadline.Readline().set_completer(completer)
+        else:
+            gnureadline.parse_and_bind("tab: complete")
+            gnureadline.set_completer(completer)
+        pc.printout("Run a command: ", pc.YELLOW)
+        cmd = input()
+
+        _cmd = commands.get(cmd)
+
+    if _cmd:
+        _cmd()
     elif cmd == "FILE=y":
         api.set_write_file(True)
     elif cmd == "FILE=n":
@@ -160,5 +192,10 @@ while True:
         api.set_json_dump(True)
     elif cmd == "JSON=n":
         api.set_json_dump(False)
+    elif cmd == "":
+        print("")
     else:
         pc.printout("Unknown command\n", pc.RED)
+
+    if args.command:
+        break
