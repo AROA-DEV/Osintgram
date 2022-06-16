@@ -39,14 +39,37 @@ Osintgram offers an interactive shell to perform analysis on Instagram account o
 
 You can find detailed commands usage [here](doc/COMMANDS.md).
 
-[**Latest version**](https://github.com/Datalux/Osintgram/releases/tag/1.3) |
-[Commands](doc/COMMANDS.md) |
-[CHANGELOG](doc/CHANGELOG.md)
-
 ## FAQ
 1. **Can I access the contents of a private profile?** No, you cannot get information on private profiles. You can only get information from a public profile or a profile you follow. The tools that claim to be successful are scams!
 2. **What is and how I can bypass the `challenge_required` error?** The `challenge_required` error means that Instagram notice a suspicious behavior on your profile, so needs to check if you are a real person or a bot. To avoid this you should follow the suggested link and complete the required operation (insert a code, confirm email, etc)
 
+# Clean Pc Installation
+1. Fork/Clone/Download this repo
+
+    `git clone https://github.com/Datalux/Osintgram.git`
+
+
+2. Navigate to the directory
+
+    `cd Osintgram`
+
+3. Run `pip3 install -r requirements.txt`
+
+
+4. Create a subdirectory `config`
+
+    `mkdir config`
+
+5. Create in `config` folder the file: `username.conf` and write your Instagram account username
+
+6. Create in `config` folder the file: `pw.conf` and write your Instagram account password
+
+7. Create in `config` folder the file: `settings.json` and write the following string: "{}" without quotation marks
+
+8. Run the main.py script 
+
+    `python3 main.py <target username>`
+    
 
 ## Installation ⚙️
 
