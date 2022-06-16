@@ -60,11 +60,8 @@ You can find detailed commands usage [here](doc/COMMANDS.md).
 
     `mkdir config`
 
-5. Create in `config` folder the file: `username.conf` and write your Instagram account username
+5. Go in to the `config` folder the file: `credentials.ini` and fill in the information
 
-6. Create in `config` folder the file: `pw.conf` and write your Instagram account password
-
-7. Create in `config` folder the file: `settings.json` and write the following string: "{}" without quotation marks
 
 8. Run the main.py script 
 
